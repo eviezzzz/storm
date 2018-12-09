@@ -1,0 +1,44 @@
+import java.sql.Date;
+
+import twitter4j.GeoLocation;
+import twitter4j.Status;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+
+
+public abstract class GeoBolt extends BaseRichBolt{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	double[][] boundingBox= {
+			  {-180, -90}, {180, 90}
+			}; /// whole world;
+	public void execute(Tuple tuple, BasicOutputCollector collector) {
+		Status status = (Status) tuple.getValue(0);
+		GeoLocation g = status.getGeoLocation();
+		String username = status.getUser().getScreenName();
+		Long tweetId = status.getId();
+		String content = status.getText();
+		Date dateTime = (Date) status.getCreatedAt();
+		
+		/**if(g !=null){
+			Double Latitude = g.getLatitude();
+			Double Longtitude = g.getLongitude();
+			String location = g.toString();*/
+			collector.emit(new Values(g, username, tweetId,content,dateTime));
+		
+
+		}
+	
+	
+	public void declareOutputFeilds(OutputFieldsDeclarer declarer){
+		declarer.declare(new Fields("location", "username", "tweetId", "content", "datetime"));
+	}
+
+}
